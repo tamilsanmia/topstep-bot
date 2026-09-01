@@ -1,0 +1,14 @@
+{
+  "dry_run": true,
+  "stake_amount": 1,
+  "max_open_trades": 1,
+  "timeframe": "5m",
+  "contract_root": "MNQ",
+  "strategy": "SampleStrategy",
+  "strategy_path": "user_data/strategies",
+  "process_throttle_secs": 5,
+  "startup_candle_count": 200,
+  "order_type": "market",
+  "stoploss_ticks": 20,
+  "takeprofit_ticks": 40
+}
