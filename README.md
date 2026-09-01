@@ -61,7 +61,9 @@ Pairs use Freqtrade format: `MNQ/USD`, `MBT/USD`, `MET/USD`.
 |-------|----------|
 | [docs/configuration.md](docs/configuration.md) | Full `config.json` reference |
 | [docs/development.md](docs/development.md) | Local setup, Docker, strategies |
-| [docs/topstep-integration.md](docs/topstep-integration.md) | ProjectX code map, API, risk rules |
+| [docs/topstep-integration.md](docs/topstep-integration.md) | **Full file map** (11 engine patches + scripts), API, risk rules |
+
+TopstepX integration spans **`freqtrade/freqtrade/exchange/projectx*.py`**, **`topstep_*.py`**, **`api_topstep.py`**, plus `user_data/strategies/topstep_mixin.py`. See [docs/topstep-integration.md](docs/topstep-integration.md) for the complete list.
 
 ## Disclaimer
 

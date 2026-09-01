@@ -4,18 +4,26 @@
 
 ```
 topstep-bot/
-├── freqtrade/                    # Vendored Freqtrade + ProjectX patches
-│   └── freqtrade/exchange/
-│       ├── projectx.py           # Exchange adapter
-│       ├── projectx_client.py    # TopstepX HTTP client
-│       ├── topstep_accounts.py   # Account types & plan limits
-│       └── topstep_risk.py       # Risk guardrails
-├── user_data/strategies/         # Your Freqtrade strategies
-├── scripts/                      # Helper scripts
+├── freqtrade/                              # Vendored Freqtrade + TopstepX patches
+│   └── freqtrade/
+│       ├── exchange/
+│       │   ├── projectx.py                 # Exchange adapter
+│       │   ├── projectx_client.py          # TopstepX HTTP client
+│       │   ├── topstep_accounts.py         # Account types & plan limits
+│       │   └── topstep_risk.py             # Risk guardrails
+│       ├── rpc/api_server/
+│       │   └── api_topstep.py              # GET /api/v1/topstep_risk
+│       └── freqtradebot.py                 # check_topstep_risk() hook
+├── user_data/strategies/
+│   ├── topstep_mixin.py                    # leverage: 1.0 for lot sizing
+│   └── ZaratustraV13.py                    # Active strategy
+├── scripts/                                # list-accounts, risk-status, install
 ├── docker-compose.yml
 ├── Dockerfile
-└── config.json                   # Local config (gitignored)
+└── config.json                             # Local config (gitignored)
 ```
+
+Full file list: [docs/topstep-integration.md](topstep-integration.md#integration-file-map)
 
 ## Docker (recommended)
 
@@ -88,11 +96,21 @@ Reference: `user_data/strategies/ZaratustraV13.py`
 
 ## Modifying the exchange adapter
 
-Edit files under **`freqtrade/freqtrade/exchange/`**, then rebuild:
+Edit files listed in [topstep-integration.md](topstep-integration.md#integration-file-map), then rebuild:
 
 ```bash
 docker compose up -d --build
 ```
+
+Primary files to touch:
+
+| File | When to edit |
+|------|----------------|
+| `freqtrade/freqtrade/exchange/projectx.py` | Orders, balances, lot sizing, P&L |
+| `freqtrade/freqtrade/exchange/projectx_client.py` | TopstepX API calls |
+| `freqtrade/freqtrade/exchange/topstep_accounts.py` | Account types, contract limits |
+| `freqtrade/freqtrade/exchange/topstep_risk.py` | Daily/max loss, consistency rules |
+| `freqtrade/freqtrade/rpc/api_server/api_topstep.py` | Risk REST endpoint |
 
 Key behaviors in `projectx.py`:
 

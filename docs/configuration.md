@@ -94,7 +94,7 @@ Enable with `exchange.topstep_rules_enabled: true`.
 | `auto_pause_on_daily_loss` | Bot pauses when daily loss trigger hit |
 | `auto_stop_on_max_loss` | Bot stops when trailing max-loss floor hit |
 
-State file: `user_data/topstep_risk_<account_id>.json`
+State file: `user_data/topstep_risk_<account_id>.json` (see [topstep-integration.md](topstep-integration.md#runtime-state-gitignored))
 
 Check status:
 
