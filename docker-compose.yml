@@ -1,0 +1,13 @@
+services:
+  topstepbot:
+    build: .
+    container_name: topstepbot
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8080}:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./config.json:/app/config.json
+      - ./user_data:/app/user_data
+    command: ["trade", "--strategy", "${STRATEGY:-SampleStrategy}"]

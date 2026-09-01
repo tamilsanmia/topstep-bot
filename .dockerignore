@@ -1,11 +1,13 @@
 .env
-config.json
 .venv/
 venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .mypy_cache/
+.git/
+.gitignore
+*.log
 user_data/logs/
 user_data/backtest_results/
-*.log
+config.json
