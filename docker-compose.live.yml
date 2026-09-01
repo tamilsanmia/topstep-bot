@@ -1,5 +1,6 @@
 # Override for live trading (real orders). Use with:
 #   docker compose -f docker-compose.yml -f docker-compose.live.yml up -d
+# Also set "dry_run": false in config.json
 services:
   topstepbot:
-    command: ["trade", "--strategy", "${STRATEGY:-SampleStrategy}", "--live"]
+    command: ["trade"]

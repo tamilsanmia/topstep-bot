@@ -1,5 +1,5 @@
-.env
 config.json
+.env
 .venv/
 venv/
 __pycache__/
@@ -8,4 +8,9 @@ __pycache__/
 .mypy_cache/
 user_data/logs/
 user_data/backtest_results/
+user_data/*.sqlite
+user_data/*.sqlite-journal
+user_data/*.sqlite-wal
+user_data/*.sqlite-shm
+user_data/topstep_risk_*.json
 *.log

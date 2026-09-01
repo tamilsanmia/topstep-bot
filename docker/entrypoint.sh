@@ -8,4 +8,4 @@ if [ ! -f /app/config.json ]; then
   echo "Created /app/config.json from config.example.json"
 fi
 
-exec python -m topstepbot -c /app/config.json "$@"
+exec freqtrade "$@" -c /app/config.json --userdir /app/user_data
