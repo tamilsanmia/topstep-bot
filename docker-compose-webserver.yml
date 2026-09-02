@@ -1,0 +1,25 @@
+# FreqUI backtest / webserver mode (ProjectX data + strategies).
+# Stop live bot first if both need port 8080, or change the host port below.
+#
+#   docker compose -f docker-compose-webserver.yml up -d --build
+#   docker compose -f docker-compose-webserver.yml logs -f
+#   docker compose -f docker-compose-webserver.yml down
+services:
+  freqtrade-webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        FREQTRADE_IMAGE: ${FREQTRADE_IMAGE:-freqtradeorg/freqtrade:latest}
+    image: topstep-bot:latest
+    restart: unless-stopped
+    container_name: freqtrade-webserver
+    entrypoint: ["freqtrade"]
+    volumes:
+      - ./user_data:/freqtrade/user_data
+    ports:
+      - "8081:8080"
+    command: >
+      webserver
+      --config /freqtrade/user_data/config-futures-backtest.json
+      --userdir /freqtrade/user_data

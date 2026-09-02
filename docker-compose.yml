@@ -3,11 +3,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        FREQTRADE_IMAGE: ${FREQTRADE_IMAGE:-freqtradeorg/freqtrade:latest}
+    image: topstep-bot:latest
     container_name: topstepbot
     restart: unless-stopped
     ports:
       - "8080:8080"
     volumes:
-      - ./config.json:/app/config.json
-      - ./user_data:/app/user_data
+      - ./config.json:/freqtrade/config.json
+      - ./user_data:/freqtrade/user_data
     command: ["trade"]

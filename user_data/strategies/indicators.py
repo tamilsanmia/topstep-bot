@@ -30,6 +30,36 @@ def crossed_below(series1: pd.Series, series2: pd.Series) -> pd.Series:
     return (series1 < series2) & (series1.shift(1) >= series2.shift(1))
 
 
+def stochastic_momentum_index(
+    dataframe: pd.DataFrame,
+    *,
+    length: int = 13,
+    smooth1: int = 25,
+    smooth2: int = 2,
+    signal_length: int = 12,
+    source: str = "close",
+) -> tuple[pd.Series, pd.Series, pd.Series]:
+    """
+    Stochastic Momentum Index (SMI) — matches TradingView ta.ema smoothing.
+
+    Based on the Reverse Stochastic Momentum Index by The_Caretaker / everget SMI.
+    """
+    src = dataframe[source]
+    highest = dataframe["high"].rolling(length).max()
+    lowest = dataframe["low"].rolling(length).min()
+    hl_mid = 0.5 * (highest + lowest)
+    hl_range = highest - lowest
+
+    numerator = (src - hl_mid).ewm(span=smooth1, adjust=False).mean().ewm(span=smooth2, adjust=False).mean()
+    denominator = (0.5 * hl_range).ewm(span=smooth1, adjust=False).mean().ewm(span=smooth2, adjust=False).mean()
+    denominator = denominator.replace(0, np.nan)
+
+    smi = 100 * numerator / denominator
+    signal = smi.ewm(span=signal_length, adjust=False).mean()
+    hist = smi - signal
+    return smi, signal, hist
+
+
 def _wilder_smooth(series: pd.Series, period: int) -> pd.Series:
     return series.ewm(alpha=1.0 / period, adjust=False).mean()
 

@@ -1,3 +1,2 @@
-# Dependencies are installed from the sibling freqtrade fork.
-# Local dev:  ./scripts/install-freqtrade.sh
-# Docker:     see Dockerfile (pip install -e /tmp/freqtrade)
+# Local dev: pip install freqtrade + ./scripts/install-projectx.sh
+# Docker: official freqtradeorg/freqtrade image + ProjectX overlay (see Dockerfile)

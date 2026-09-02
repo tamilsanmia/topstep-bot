@@ -7,7 +7,7 @@ if python3 -c "import freqtrade" 2>/dev/null; then
 fi
 
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -qx topstepbot; then
-  exec docker exec topstepbot python3 /app/scripts/list_accounts.py -c /app/config.json "$@"
+  exec docker exec topstepbot python3 /freqtrade/scripts/list_accounts.py -c /freqtrade/config.json "$@"
 fi
 
 echo "Install Freqtrade first: ./scripts/install-freqtrade.sh" >&2

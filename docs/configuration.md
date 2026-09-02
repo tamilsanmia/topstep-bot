@@ -15,6 +15,8 @@ Generate an API key in TopstepX: **Settings → API → API Key**.
     "api_base": "https://api.topstepx.com",
     "account_id": 26448079,
     "account_filter": "combine",
+    "market_hub": "https://rtc.topstepx.com/hubs/market",
+    "enable_ws": true,
     "live_data": "auto"
   }
 }
@@ -25,6 +27,8 @@ Generate an API key in TopstepX: **Settings → API → API Key**.
 | `account_id` | Pin one account (from `./scripts/list-accounts.sh`) |
 | `account_filter` | `combine`, `express_funded`, `live_funded`, or `any` |
 | `live_data` | `"auto"` picks live/sim data from account type |
+| `market_hub` | SignalR market hub URL for live quotes/trades |
+| `enable_ws` | `true` = live websocket candles; `false` = REST only |
 
 ## Order sizing (lots)
 

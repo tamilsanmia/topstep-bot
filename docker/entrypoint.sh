@@ -1,11 +1,11 @@
 #!/bin/sh
 set -e
 
-cd /app
+cd /freqtrade
 
-if [ ! -f /app/config.json ]; then
-  cp /app/config.example.json /app/config.json
-  echo "Created /app/config.json from config.example.json"
+if [ ! -f /freqtrade/config.json ]; then
+  cp /freqtrade/config.example.json /freqtrade/config.json
+  echo "Created /freqtrade/config.json from config.example.json"
 fi
 
-exec freqtrade "$@" -c /app/config.json --userdir /app/user_data
+exec freqtrade "$@" -c /freqtrade/config.json --userdir /freqtrade/user_data

@@ -2,13 +2,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-FREQTRADE_SRC="${FREQTRADE_SRC:-$ROOT/freqtrade}"
 
-if [[ ! -d "$FREQTRADE_SRC" ]]; then
-  echo "freqtrade source not found at $FREQTRADE_SRC" >&2
-  exit 1
-fi
-
-python3 -m pip install -e "$FREQTRADE_SRC"
+python3 -m pip install --upgrade "freqtrade"
 freqtrade install-ui
-echo "Installed editable freqtrade from $FREQTRADE_SRC and FreqUI"
+FT_ROOT="$(python3 -c 'import freqtrade, os; print(os.path.dirname(os.path.dirname(freqtrade.__file__)))')"
+FT_ROOT="$FT_ROOT" "$ROOT/scripts/install-projectx.sh"
+echo "Installed freqtrade from PyPI/image source and applied ProjectX overlay"

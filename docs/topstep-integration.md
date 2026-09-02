@@ -1,6 +1,6 @@
 # Topstep integration
 
-This project uses a **vendored Freqtrade fork** with a custom **`projectx`** exchange for TopstepX.
+This project uses the official **Freqtrade Docker image** (`freqtradeorg/freqtrade:latest`) with a **ProjectX overlay** applied at build time — no vendored Freqtrade fork.
 
 ## Architecture
 
@@ -22,30 +22,36 @@ Freqtrade engine
 
 ## Integration file map
 
-All TopstepX-related code lives in **`freqtrade/freqtrade/`** (engine patches) plus this repo’s config, strategies, and scripts.
+All TopstepX-related code lives in **`projectx/overlay/`** (copied in) and **`projectx/install.py`** (patches upstream Freqtrade), plus this repo’s config, strategies, and scripts.
 
-### Core Freqtrade patches
+### Overlay files (copied verbatim)
 
 | File | Purpose |
 |------|---------|
-| `freqtrade/freqtrade/exchange/projectx.py` | **ProjectX exchange adapter** — OHLCV, orders, balances, positions, lot sizing, P&L (`contractSize`), risk hooks |
-| `freqtrade/freqtrade/exchange/projectx_client.py` | **TopstepX HTTP client** — auth, accounts, contracts, bars, orders, positions |
-| `freqtrade/freqtrade/exchange/topstep_accounts.py` | Account types (combine / express / live), plan limits, account selection |
-| `freqtrade/freqtrade/exchange/topstep_risk.py` | Daily loss, max loss, consistency tracking; auto pause/stop |
-| `freqtrade/freqtrade/rpc/api_server/api_topstep.py` | **`GET /api/v1/topstep_risk`** REST endpoint |
-| `freqtrade/freqtrade/freqtradebot.py` | Calls `check_topstep_risk()` each bot loop (~lines 337–338) |
+| `projectx/overlay/freqtrade/exchange/projectx.py` | **ProjectX exchange adapter** — OHLCV, orders, balances, positions, lot sizing, P&L (`contractSize`), risk hooks |
+| `projectx/overlay/freqtrade/exchange/projectx_client.py` | **TopstepX HTTP client** — auth, accounts, contracts, bars, orders, positions |
+| `projectx/overlay/freqtrade/exchange/projectx_signalr.py` | **SignalR market hub client** — WebSocket connect, quote/trade subscriptions |
+| `projectx/overlay/freqtrade/exchange/projectx_exchange_ws.py` | **Live OHLCV websocket feed** — REST seed + real-time GatewayQuote/Trade updates |
+| `projectx/overlay/freqtrade/exchange/topstep_accounts.py` | Account types (combine / express / live), plan limits, account selection |
+| `projectx/overlay/freqtrade/exchange/topstep_risk.py` | Daily loss, max loss, consistency tracking; auto pause/stop |
+| `projectx/overlay/freqtrade/rpc/api_server/api_topstep.py` | **`GET /api/v1/topstep_risk`** REST endpoint |
 
-### Wiring and registration
+### Core Freqtrade patches (`projectx/install.py`)
 
-| File | Change |
+| Upstream file | Change |
 |------|--------|
-| `freqtrade/freqtrade/exchange/__init__.py` | Exports `Projectx` exchange class |
-| `freqtrade/freqtrade/exchange/common.py` | Registers `"projectx"` as supported exchange |
-| `freqtrade/freqtrade/exchange/check_exchange.py` | ProjectX validation / startup message |
-| `freqtrade/freqtrade/exchange/exchange_utils.py` | ProjectX-specific exchange utilities |
-| `freqtrade/freqtrade/rpc/api_server/webserver.py` | Mounts `api_topstep` router on the API server |
-
-**Total engine patches:** 11 Python files (6 core + 5 wiring).
+| `freqtrade/exchange/__init__.py` | Exports `Projectx` exchange class |
+| `freqtrade/exchange/common.py` | Registers `"projectx"` as supported exchange |
+| `freqtrade/exchange/check_exchange.py` | ProjectX validation / startup message |
+| `freqtrade/exchange/exchange_utils.py` | ProjectX-specific exchange utilities |
+| `freqtrade/freqtradebot.py` | `check_topstep_risk()`, live P&L websocket push |
+| `freqtrade/rpc/rpc.py` | Uses `get_trade_unrealized_profit()` for open-trade P&L |
+| `freqtrade/rpc/api_server/webserver.py` | Mounts `api_topstep` router; thread-safe WS publish |
+| `freqtrade/rpc/api_server/api_ws.py` | Broadcasts `trade_status` without subscription |
+| `freqtrade/rpc/api_server/ws/message_stream.py` | `publish_threadsafe()` |
+| `freqtrade/enums/rpcmessagetype.py` | `TRADE_STATUS` message type |
+| `freqtrade/rpc/rpc_types.py` | `RPCTradeStatusMsg` |
+| `freqtrade/rpc/webhook.py` | Ignore `TRADE_STATUS` webhooks |
 
 ### This repo (deployment layer)
 
@@ -58,8 +64,9 @@ All TopstepX-related code lives in **`freqtrade/freqtrade/`** (engine patches) p
 | `scripts/list_accounts.py` | List Topstep accounts via `ProjectXClient` |
 | `scripts/list-accounts.sh` | Shell wrapper (local Freqtrade or Docker exec) |
 | `scripts/risk-status.sh` | Queries `GET /api/v1/topstep_risk` |
-| `scripts/install-freqtrade.sh` | Local dev: `pip install -e ./freqtrade` |
-| `Dockerfile` / `docker-compose.yml` | Container build and run |
+| `scripts/install-freqtrade.sh` | Local dev: `pip install freqtrade` + ProjectX overlay |
+| `scripts/install-projectx.sh` | Apply overlay to existing Freqtrade install |
+| `Dockerfile` / `docker-compose.yml` | Extends `freqtradeorg/freqtrade:latest` |
 | `docs/configuration.md` | Config reference |
 | `docs/development.md` | Dev and Docker guide |
 | `docs/topstep-integration.md` | This file |
@@ -86,6 +93,35 @@ All TopstepX-related code lives in **`freqtrade/freqtrade/`** (engine patches) p
 | `POST /api/Position/searchOpen` | Open positions |
 
 Implemented in `projectx_client.py`; consumed by `projectx.py`.
+
+### Real-time market data (WebSocket)
+
+TopstepX streams live quotes and trades over **SignalR** (not CCXT):
+
+| Hub | URL | Purpose |
+|-----|-----|---------|
+| Market | `https://rtc.topstepx.com/hubs/market` | `GatewayQuote`, `GatewayTrade` |
+| User | `https://rtc.topstepx.com/hubs/user` | Account, order, position updates (REST polling today) |
+
+When `exchange.enable_ws` is `true` (default), the bot:
+
+1. Seeds OHLCV from `retrieveBars` (REST)
+2. Subscribes via `SubscribeContractQuotes` + `SubscribeContractTrades`
+3. Updates the **current candle** on every live tick (no REST polling delay)
+4. Pushes **live open-trade P&L** to FreqUI over `/api/v1/message/ws` (`trade_status` events, ~150ms throttle)
+
+FreqUI still polls `/status` every 5s as a fallback, but RP&L updates appear on each ProjectX quote when the websocket connection is active.
+
+Config:
+
+```json
+"exchange": {
+  "market_hub": "https://rtc.topstepx.com/hubs/market",
+  "enable_ws": true
+}
+```
+
+Set `"enable_ws": false` to fall back to REST-only candles.
 
 ---
 
@@ -149,11 +185,18 @@ curl -u admin:admin http://localhost:8080/api/v1/topstep_risk
 
 ## Modifying the integration
 
-1. Edit files under `freqtrade/freqtrade/exchange/` or `freqtrade/freqtrade/rpc/api_server/api_topstep.py`
+1. Edit overlay files under `projectx/overlay/freqtrade/`, or patch logic in `projectx/install.py`
 2. Rebuild the container:
 
 ```bash
 docker compose up -d --build
+```
+
+**Update upstream Freqtrade** (pull latest official image):
+
+```bash
+docker compose build --pull --no-cache
+docker compose up -d
 ```
 
 For local dev without Docker:

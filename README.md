@@ -1,16 +1,14 @@
 # Topstep + Freqtrade
 
-Trade **TopstepX / ProjectX** CME futures with a vendored **[Freqtrade](https://www.freqtrade.io/)** fork and a custom **`projectx`** exchange adapter.
-
-Everything lives in **one repository**:
+Trade **TopstepX / ProjectX** CME futures with the official **[Freqtrade](https://www.freqtrade.io/)** Docker image plus a **ProjectX overlay** (no vendored Freqtrade fork).
 
 ```
 topstep-bot/
-├── freqtrade/          # Freqtrade engine + ProjectX / Topstep patches
+├── projectx/           # ProjectX exchange + Topstep patches (applied at build)
 ├── user_data/          # Strategies, SQLite DB, risk state
 ├── config.json         # Your settings (copy from config.example.json)
 ├── docker-compose.yml
-└── docs/               # Detailed guides
+└── docs/
 ```
 
 ## Quick start
@@ -35,12 +33,29 @@ docker compose down
 
 **Live trading:** set `"dry_run": false` in `config.json`, then `docker compose up -d --build`.
 
+## Update Freqtrade
+
+Pull the latest official image and rebuild:
+
+```bash
+docker compose build --pull --no-cache
+docker compose up -d
+```
+
+Or pin a version:
+
+```bash
+FREQTRADE_IMAGE=freqtradeorg/freqtrade:2025.1 docker compose build --pull
+docker compose up -d
+```
+
 ## Helper scripts
 
 ```bash
-./scripts/list-accounts.sh     # Topstep accounts (needs Freqtrade install or running container)
-./scripts/risk-status.sh       # Risk JSON from running bot
-./scripts/install-freqtrade.sh   # Local dev: pip install -e ./freqtrade
+./scripts/list-accounts.sh       # Topstep accounts (container or local install)
+./scripts/risk-status.sh         # Risk JSON from running bot
+./scripts/install-freqtrade.sh   # Local dev: pip install freqtrade + ProjectX overlay
+./scripts/install-projectx.sh    # Apply overlay to an existing Freqtrade install
 ```
 
 ## Key settings
@@ -61,9 +76,7 @@ Pairs use Freqtrade format: `MNQ/USD`, `MBT/USD`, `MET/USD`.
 |-------|----------|
 | [docs/configuration.md](docs/configuration.md) | Full `config.json` reference |
 | [docs/development.md](docs/development.md) | Local setup, Docker, strategies |
-| [docs/topstep-integration.md](docs/topstep-integration.md) | **Full file map** (11 engine patches + scripts), API, risk rules |
-
-TopstepX integration spans **`freqtrade/freqtrade/exchange/projectx*.py`**, **`topstep_*.py`**, **`api_topstep.py`**, plus `user_data/strategies/topstep_mixin.py`. See [docs/topstep-integration.md](docs/topstep-integration.md) for the complete list.
+| [docs/topstep-integration.md](docs/topstep-integration.md) | ProjectX overlay, API, risk rules |
 
 ## Disclaimer
 

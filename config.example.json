@@ -1,10 +1,10 @@
 {
   "dry_run": true,
   "stake_currency": "USD",
-  "stake_amount": 1,
+  "stake_amount": 5,
   "tradable_balance_ratio": 1.0,
   "fiat_display_currency": "USD",
-  "max_open_trades": 1,
+  "max_open_trades": 5,
   "timeframe": "5m",
   "trading_mode": "futures",
   "margin_mode": "isolated",
@@ -44,6 +44,7 @@
     "api_key": "",
     "api_base": "https://api.topstepx.com",
     "market_hub": "https://rtc.topstepx.com/hubs/market",
+    "enable_ws": true,
     "live_data": "auto",
     "account_id": null,
     "account_filter": "combine",
@@ -57,7 +58,10 @@
       "warn_on_consistency": true,
       "block_on_consistency": false,
       "auto_pause_on_daily_loss": true,
-      "auto_stop_on_max_loss": true
+      "auto_stop_on_max_loss": true,
+      "block_on_margin_rejection": true,
+      "margin_reject_cooldown_secs": 3600,
+      "enforce_margin_precheck": true
     },
     "pair_whitelist": [
       "MBT/USD",
