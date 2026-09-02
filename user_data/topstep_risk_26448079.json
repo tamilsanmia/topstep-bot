@@ -1,0 +1,12 @@
+{
+  "account_id": 26448079,
+  "buying_power": 50000.0,
+  "peak_balance": 50000.0,
+  "session_key": "2026-09-02",
+  "session_start_balance": 49098.64,
+  "daily_pnls": {
+    "2026-09-01": -79.7300000000032
+  },
+  "last_balance": 49667.4,
+  "last_warning": ""
+}
