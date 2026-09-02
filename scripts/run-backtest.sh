@@ -11,6 +11,11 @@ CONFIG_BASENAME="$(basename "$CONFIG_FILE")"
 CONTAINER_CONFIG="/freqtrade/user_data/$CONFIG_BASENAME"
 STRATEGY="${STRATEGY:-ZaratustraV13}"
 TIMERANGE="${TIMERANGE:-20250728-20260801}"
+STARTING_BALANCE="${STARTING_BALANCE:-}"
+EXTRA_ARGS=()
+if [[ -n "$STARTING_BALANCE" ]]; then
+  EXTRA_ARGS+=(--starting-balance "$STARTING_BALANCE")
+fi
 
 if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
   echo "Building $IMAGE ..."
@@ -25,4 +30,5 @@ docker run --rm \
   --config "$CONTAINER_CONFIG" \
   --userdir /freqtrade/user_data \
   --strategy "$STRATEGY" \
-  --timerange "$TIMERANGE"
+  --timerange "$TIMERANGE" \
+  "${EXTRA_ARGS[@]}"
